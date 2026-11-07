@@ -184,7 +184,7 @@ Run
 ```bash
 pip install rasterio numpy pandas scipy pyyaml
 python run_m1_local.py
-```bash
+```
 nputs: data/raw/ (B04, B08, B12, SCL as TIFF), data/dem/ (DGM10), MTD_TL.xml.
 Config: config.yaml.
 
