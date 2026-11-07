@@ -1,0 +1,31 @@
+aoi:
+  lon_min: 6.5
+  lat_min: 49.7
+  lon_max: 6.7
+  lat_max: 49.8
+
+scsc:
+  target_bands: ['B04', 'B08', 'B12']
+  ndvi_threshold: 0.35
+  slope_threshold_deg: 5.0
+  min_valid_pixels: 100
+  c_default: 0.5
+  c_min: 0.0
+  c_max: 5.0
+  r_threshold: 0.1
+  p_threshold: 0.05
+  use_b4_filter: false
+  b4_filter_max: 0.12
+  cloud_dilation_pixels: 1
+
+dem:
+  source: 'DGM10'
+  resolution_m: 10
+
+paths:
+  raw_dir: 'data/raw'
+  dem_path: 'data/dem/dgm10_trier.tif'
+  output_dir: 'data/output'
+
+projection:
+  target_epsg: 25832

@@ -1,4 +1,7 @@
-.pytest_cache/
 __pycache__/
-*.csv
+*.pyc
+.pytest_cache/
+*.tif
+*.xml
 m1_calibration_audit.csv
+data/
