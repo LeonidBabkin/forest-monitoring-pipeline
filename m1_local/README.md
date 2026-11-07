@@ -111,6 +111,7 @@ Ausgabe: `data/output/*_corr.tif` (geokodiert, gleiches Profil wie Eingabe).
 ```bash
 pip install rasterio numpy pandas scipy pyyaml
 python run_m1_local.py
+```
 
 Eingaben: data/raw/ (B04, B08, B12, SCL als TIFF), data/dem/ (DGM10),
 MTD_TL.xml. Konfiguration: config.yaml.
