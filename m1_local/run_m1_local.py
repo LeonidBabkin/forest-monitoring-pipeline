@@ -82,15 +82,6 @@ def process_scene(scene_id: str, cfg: dict) -> dict:
 
     if cfg['scsc'].get('use_b4_filter', False):
         forest_mask &= (b4 < cfg['scsc']['b4_filter_max'])
-        # --- УПРОЩЕННЫЕ МАСКИ (для теста) ---
-    # Пока игнорируем SCL и NoData, чтобы убедиться, что математика работает
-    # forest_mask = (ndvi > cfg['scsc']['ndvi_threshold']) & \
-    #               (slope_deg > cfg['scsc']['slope_threshold_deg'])
-    
-    # # Добавляем проверку только на то, что пиксель не пустой
-    # valid_data_mask = (b4 > 0) & (b8 > 0) & (b12 > 0)
-    # forest_mask = forest_mask & valid_data_mask
-
 
 
     # 8. SCS+C по каналам
