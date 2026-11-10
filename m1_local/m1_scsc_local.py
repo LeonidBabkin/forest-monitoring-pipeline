@@ -50,30 +50,13 @@ def compute_cos_i(sun_zenith_rad: float, sun_azimuth_rad: float,
     return np.clip(cos_i, 0.0, 1.0)
 
 
-# def calibrate_c(dn: np.ndarray, cos_i: np.ndarray, mask: np.ndarray,
-#                 params: dict) -> tuple[float, float, float, int]:
-#     """Линейная регрессия DN = a·cos(i) + b; C = b/a."""
-#     valid = mask & (dn > 0) & np.isfinite(dn) & np.isfinite(cos_i) & (cos_i > 0.1)
-#     n = int(valid.sum())
-#     if n < params['min_valid_pixels']:
-#         return params['c_default'], -999.0, -999.0, 0
-#     try:
-#         a, b = np.polyfit(cos_i[valid], dn[valid], 1)
-#     except (np.linalg.LinAlgError, ValueError):
-#         return params['c_default'], -999.0, -999.0, 0
-#     if abs(a) < 1e-6:
-#         return params['c_default'], -999.0, -999.0, 0
-#     # if abs(a) < 1e-4:
-#     #     return params['c_default'], -999.0, -999.0, 0
-#     c = b / a
-#     if not (params['c_min'] < c < params['c_max']):
-#         return params['c_default'], -999.0, -999.0, 0
-#     return float(c), float(a), float(b), 1
-
-def calibrate_c(dn, cos_i, mask, params):
+def calibrate_c(dn: np.ndarray, cos_i: np.ndarray, mask: np.ndarray, params: dict, boa_offset: int = 0) -> tuple[float, float, float, int]:
     # Вычитаем радиометрическое смещение ESA (BOA_ADD_OFFSET = -1000)
-    dn = dn - 1000.0
-    valid = mask & (dn > 0) & np.isfinite(dn) & np.isfinite(cos_i) & (cos_i > 0.4)
+    if boa_offset != 0:
+        dn = dn.astype(np.float32) + float(boa_offset)
+    # dn = dn - 1000.0
+    # valid = mask & (dn > 0) & np.isfinite(dn) & np.isfinite(cos_i) & (cos_i > 0.4)
+    valid = mask & np.isfinite(dn) & np.isfinite(cos_i) & (cos_i > 0.0)
     n = int(valid.sum())
     
     if n < params['min_valid_pixels']:

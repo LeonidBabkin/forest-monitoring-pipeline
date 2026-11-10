@@ -6,7 +6,7 @@ aoi:
 
 scsc:
   target_bands: ['B04', 'B08', 'B12']
-  ndvi_threshold: 0.35
+  ndvi_threshold: 0.65
   slope_threshold_deg: 5.0
   min_valid_pixels: 100
   c_default: 0.5
@@ -14,8 +14,10 @@ scsc:
   c_max: 5.0
   r_threshold: 0.1
   p_threshold: 0.05
+  # use_b4_filter: true
+  # b4_filter_max: 0.12
   use_b4_filter: false
-  b4_filter_max: 0.12
+  b4_filter_max: 800
   cloud_dilation_pixels: 1
 
 dem:

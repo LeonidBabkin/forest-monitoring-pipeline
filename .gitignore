@@ -4,4 +4,5 @@ __pycache__/
 *.tif
 *.xml
 m1_calibration_audit.csv
+m1_stac_audit.csv
 data/

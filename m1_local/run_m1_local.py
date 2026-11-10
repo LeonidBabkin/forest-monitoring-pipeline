@@ -38,7 +38,13 @@ def crop_to_aoi(src_path: Path, cfg: dict) -> tuple[np.ndarray, dict]:
     return out_image[0].astype(np.float32), profile
 
 
-def process_scene(scene_id: str, cfg: dict) -> dict:
+# def process_scene(scene_id: str, cfg: dict) -> dict:
+# def process_scene(scene_id: str, cfg: dict, sun_angles: tuple = None) -> dict:    
+#     raw = Path(cfg['paths']['raw_dir'])
+#     out = Path(cfg['paths']['output_dir'])
+#     out.mkdir(parents=True, exist_ok=True)
+
+def process_scene(scene_id: str, cfg: dict, sun_angles: tuple = None, boa_offset: int = 0) -> dict:
     raw = Path(cfg['paths']['raw_dir'])
     out = Path(cfg['paths']['output_dir'])
     out.mkdir(parents=True, exist_ok=True)
@@ -53,8 +59,14 @@ def process_scene(scene_id: str, cfg: dict) -> dict:
     dem = reproject_to_target_grid(cfg['paths']['dem_path'], prof, Resampling.bilinear)
 
     # 3. Морфометрия и углы Солнца
+    # slope, aspect = compute_slope_aspect(dem, prof['transform'])
+    # sun_zenith, sun_azimuth = parse_sun_angles(raw / f"{scene_id}_MTD_TL.xml")
+        # 3. Морфометрия и углы Солнца — ИЗМЕНЕНИЕ ЗДЕСЬ
     slope, aspect = compute_slope_aspect(dem, prof['transform'])
-    sun_zenith, sun_azimuth = parse_sun_angles(raw / f"{scene_id}_MTD_TL.xml")
+    if sun_angles is not None:                          # 🟢 ДОБАВЛЕНО
+        sun_zenith, sun_azimuth = sun_angles            # 🟢 ДОБАВЛЕНО
+    else:                                               # 🟢 ДОБАВЛЕНО
+        sun_zenith, sun_azimuth = parse_sun_angles(raw / f"{scene_id}_MTD_TL.xml")  # 🟢 ДОБАВЛЕНО
 
     # 4. Маски дефектов (SCL) + дилатация
     bad_mask = np.isin(scl.astype(int), [0, 1, 3, 8, 9, 10, 11])
@@ -73,6 +85,10 @@ def process_scene(scene_id: str, cfg: dict) -> dict:
     safe_denom = np.where(denom == 0, 1e-6, denom)
     ndvi = (b8 - b4) / safe_denom
     slope_deg = np.rad2deg(slope)
+        # --- ВРЕМЕННЫЙ DEBUG ДЛЯ NDVI ---
+    print(f"DEBUG NDVI: min={np.nanmin(ndvi):.2f}, max={np.nanmax(ndvi):.2f}, median={np.nanmedian(ndvi):.2f}")
+    print(f"DEBUG NDVI > 0.35: {np.sum(ndvi > 0.35)} пикселей из {ndvi.size}")
+    # --------------------------------
 
     # 7. Маска леса
     cos_i = compute_cos_i(sun_zenith, sun_azimuth, slope, aspect)
@@ -89,7 +105,8 @@ def process_scene(scene_id: str, cfg: dict) -> dict:
     all_valid = 1
     for band_name, dn in zip(['B04', 'B08', 'B12'], [b4, b8, b12]):
         print(f"DEBUG в цикле [{band_name}]: forest_mask sum = {np.sum(forest_mask)}, cos_i max = {np.nanmax(cos_i)}")
-        C, _, _, has = calibrate_c(dn, cos_i, forest_mask, cfg['scsc'])
+        C, _, _, has = calibrate_c(dn, cos_i, forest_mask, cfg['scsc'], boa_offset=boa_offset)
+        # C, _, _, has = calibrate_c(dn, cos_i, forest_mask, cfg['scsc'])
         corrected = apply_scsc(dn, cos_i, sun_zenith, slope, C, forest_mask)
         corrected[nodata_mask] = 0.0
         r, p = gate_pearson(corrected, cos_i, forest_mask)
