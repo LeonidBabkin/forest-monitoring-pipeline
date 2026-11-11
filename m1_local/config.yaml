@@ -8,7 +8,7 @@ scsc:
   target_bands: ['B04', 'B08', 'B12']
   ndvi_threshold: 0.65
   slope_threshold_deg: 5.0
-  min_valid_pixels: 100
+  min_valid_pixels: 1000
   c_default: 0.5
   c_min: 0.0
   c_max: 5.0

@@ -32,7 +32,6 @@ def compute_slope_aspect(dem: np.ndarray,
     gx = (dem[1:-1, 2:] - dem[1:-1, :-2]) / (2.0 * dx)
     gy = -(dem[2:, 1:-1] - dem[:-2, 1:-1]) / (2.0 * dy)
 
-    # slope_inner = np.arctan(np.sqrt(gx**2 + gy**2))
     slope_inner = np.arctan(np.sqrt(np.square(gx, dtype=np.float64) + np.square(gy, dtype=np.float64))).astype(np.float32)
     aspect_inner = np.mod(np.arctan2(gx, gy), 2 * np.pi)
 
@@ -54,8 +53,6 @@ def calibrate_c(dn: np.ndarray, cos_i: np.ndarray, mask: np.ndarray, params: dic
     # Вычитаем радиометрическое смещение ESA (BOA_ADD_OFFSET = -1000)
     if boa_offset != 0:
         dn = dn.astype(np.float32) + float(boa_offset)
-    # dn = dn - 1000.0
-    # valid = mask & (dn > 0) & np.isfinite(dn) & np.isfinite(cos_i) & (cos_i > 0.4)
     valid = mask & np.isfinite(dn) & np.isfinite(cos_i) & (cos_i > 0.0)
     n = int(valid.sum())
     

@@ -1,8 +1,7 @@
 """
 Альтернативная инициализация данных для Модуля 1 через STAC (Planetary Computer).
-Скачивает снимки Sentinel-2 L2A за июнь–август 2019–2020, перепроецирует
-в EPSG:25832, обрезает по AOI (6.5–6.7 E, 49.7–49.8 N), передаёт углы солнца
-из STAC напрямую в process_scene (без MTD_TL.xml).
+Скачивает снимки Sentinel-2 L2A за июнь–август 2019–2020, обрезает по AOI (6.5–6.7 E, 49.7–49.8 N), 
+перепроецирует в EPSG:25832,  передаёт углы солнца из STAC напрямую в process_scene (без MTD_TL.xml).
 """
 
 import pystac_client
@@ -78,7 +77,7 @@ def fetch_data_stac_year(
             sun_zenith_rad = np.deg2rad(item.properties["s2:mean_solar_zenith"])
             sun_azimuth_rad = np.deg2rad(item.properties["s2:mean_solar_azimuth"])
 
-            # 🔴 ИЗМЕНЕНИЕ 4: Извлекаем BOA_ADD_OFFSET из метаданных STAC
+            # Извлекаем BOA_ADD_OFFSET из метаданных STAC
             # Теория: Planetary Computer хранит поправку в свойстве 's2:boa_add_offset'.
             # Если его нет (старые сцены), используем 0. Приводим к float.
             boa_offset = float(item.properties.get("s2:boa_add_offset", 0))
@@ -87,7 +86,7 @@ def fetch_data_stac_year(
             b04_da = rioxarray.open_rasterio(
                 item.assets["B04"].href, chunks=True
             ).squeeze("band", drop=True)
-            # b04_da = b04_da.rio.reproject(f"EPSG:{target_epsg}")
+
             # --- 2. Обрезка по AOI В РОДНОЙ ПРОЕКЦИИ СНИМКА (UTM) ---
             # Переводим координаты AOI в систему координат снимка
             aoi_native = transform_geom(
@@ -161,12 +160,11 @@ def fetch_data_stac_year(
                 boa_offset=boa_offset, # <--- ДОБАВЛЕНО
             )
 
-                        # --- Очистка памяти Dask ---
+            # --- Очистка памяти Dask ---
             b04_da.close()
             for ch in channels.values():
                 ch.close()
             b04_crop.close() # Если у crop остался открытый файл-дескриптор
-
 
             if result.get('scsc_processed') == 1:
                 print(f"    ✅ SCS+C OK (C_B04={result.get('scsc_C_B04', 'N/A')})")
@@ -174,11 +172,11 @@ def fetch_data_stac_year(
             else:
                 print("    ⚠️ SCS+C не прошёл (scsc_processed=0)")
 
-                # Удаляем файлы этой сцены, так как она не прошла калибровку
-                for f in raw_dir.glob(f"{scene_id}_*.tif"):
-                    f.unlink()
-                for f in Path(cfg['paths']['output_dir']).glob(f"{scene_id}_*.tif"):
-                    f.unlink()
+            # Удаляем файлы этой сцены, так как она не прошла калибровку
+            for f in raw_dir.glob(f"{scene_id}_*.tif"):
+                f.unlink()
+            for f in Path(cfg['paths']['output_dir']).glob(f"{scene_id}_*.tif"):
+                f.unlink()
 
         except Exception as e:
             print(f"    ❌ Ошибка: {e}")
